@@ -1,5 +1,5 @@
 const express = require("express");
-const {getTopics, getApi} = require("./controllers")
+const {getTopics, getApi, getArticle} = require("./controllers")
 const app = express();
 
 app.use(express.json());
@@ -8,11 +8,15 @@ app.get("/api", getApi);
 
 app.get("/api/topics", getTopics);
 
+app.get("/api/articles/:article_id", getArticle)
+
 app.use((err, req, res, next) => {
     if (err.status && err.message) {
         res.status(err.status).send({ message: err.message})
     }
+    next()
 });
+
 
 app.use((err, req, res, next) => {
     res.status(500).send( {message: "internal server error"})
