@@ -1,4 +1,4 @@
-const {getThatTopic} = require("./models")
+const {getThatTopic, getThatApi} = require("./models")
 
 function getTopics(req, res, next) {
     getThatTopic().then((topic) => {
@@ -6,4 +6,10 @@ function getTopics(req, res, next) {
     })
 }
 
-module.exports = {getTopics}
+function getApi(req, res, next) {
+    getThatApi().then((api) => {
+        res.status(200).send(api)
+    })
+}
+
+module.exports = {getTopics, getApi}

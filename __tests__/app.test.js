@@ -4,6 +4,7 @@ const db = require("../db/connection.js")
 const data = require('../db/data/test-data/index.js')
 const seed = require('../db/seeds/seed.js')
 
+
 afterAll(() => {
     db.end();
 });
@@ -14,11 +15,11 @@ beforeEach(()=> {
 
 describe('/api/topics', ()=> {
 
-    test('GET 200: responds with status code 200', ()=> {
+    test('GET 200: responds with status code 200.', () => {
         return request(app).get('/api/topics').expect(200)
     });
 
-    test('GET 200: Responds with an array of topic objects', () => {
+    test('GET 200: Responds with an array of topic objects.', () => {
         return request(app)
             .get('/api/topics')
             .expect(200)
@@ -31,6 +32,20 @@ describe('/api/topics', ()=> {
                 });
             });
     });
-
 });
 
+describe('/api', () => {
+
+    test('GET 200: REsponds with an object of all the different endpoints.', () => {
+        return request(app)
+        .get('/api')
+        .expect(200)
+        .then(({ body }) => {
+            const APIS = body.apis
+            for(let key in APIS) {
+                expect(typeof APIS[key]).toBe('object')
+            }
+        })
+    })
+
+})
