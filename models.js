@@ -14,6 +14,11 @@ function getThatApi() {
     })
 }
 
+function getThemArticles(id) {
+    return db.query(`SELECT * FROM articles WHERE article_id=$1`,[id]).then(({ rows }) => {
+        return rows
+    })
+}
 
 
-module.exports = {getThatTopic, getThatApi}
+module.exports = {getThatTopic, getThatApi, getThemArticles}
