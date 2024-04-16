@@ -113,3 +113,35 @@ describe("/api/articles", () => {
     })
 
 })
+
+describe("/api/articles/:article_id/comments", () => {
+
+    test("GET 200: Responds with an array of the comments that that the given article_id", () => {
+        return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body }) => {
+            const { comments } = body
+            console.log('1.', comments[0])
+            expect(comments.length).toBe(11)
+            expect(comments).toBeSortedBy('created_at')
+            expect(comments[0].comment_id).toBe(9)
+            expect(comments[0].body).toBe("Superficially charming")
+            expect(comments[0].article_id).toBe(1)
+            expect(comments[0].author).toBe("icellusedkars")
+            expect(comments[0].votes).toBe(0)
+            expect(comments[0].created_at).toBe('2020-01-01T03:08:00.000Z')
+        })
+    })
+
+    test("GET 400: Responds with an error when we pass through an id number that doesn't exist", () => {
+        return request(app)
+            .get("/api/articles/99/comments")
+            .expect(400)
+            .then(({ body }) => {
+                const { message } = body
+                expect(message).toBe('invalid query value')
+            })
+    })
+
+})
