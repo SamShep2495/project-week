@@ -22,8 +22,8 @@ function getThemArticlesById(id) {
 
 function getThemArticles(sort_by = 'article_id', order = 'ASC') {
 
-    const ValidSortBys = ['article_id', 'title', 'topic', 'author', 'created_at', 'article_img_url']
-    if (!ValidSortBys.includes(sort_by)) {
+    const validSortBys = ['article_id', 'title', 'topic', 'author', 'created_at', 'article_img_url']
+    if (!validSortBys.includes(sort_by)) {
         return Promise.reject({ status: 400, message: 'invalid query value'})
     }
     let sqlString = `SELECT * FROM articles `
@@ -34,5 +34,23 @@ function getThemArticles(sort_by = 'article_id', order = 'ASC') {
     });
 };
 
+function getThemCommentsById(id, sort_by = 'created_at', order = 'ASC') {
 
-module.exports = {getThatTopic, getThatApi, getThemArticlesById, getThemArticles}
+    const validSortBys = ['comments_id', 'votes', 'created_at', 'author', 'body', 'article_id']
+    const queryValue = []
+    if (!validSortBys.includes(sort_by)) {
+        return Promise.reject({ status: 400, message: 'invalid query value'})
+    }
+    let sqlString = `SELECT * FROM comments `
+    if(id) {
+        queryValue.push(id);
+        sqlString += `WHERE article_id = $1 `
+    }
+    sqlString += `ORDER BY ${sort_by} ${order}`
+    
+    return db.query(sqlString, queryValue).then(({ rows }) => {
+        return rows
+    })
+}
+
+module.exports = {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById}
