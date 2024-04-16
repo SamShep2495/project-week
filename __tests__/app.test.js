@@ -114,7 +114,7 @@ describe("/api/articles", () => {
 
 })
 
-describe("/api/articles/:article_id/comments", () => {
+describe("GET /api/articles/:article_id/comments", () => {
 
     test("GET 200: Responds with an array of the comments that that the given article_id", () => {
         return request(app)
@@ -122,7 +122,6 @@ describe("/api/articles/:article_id/comments", () => {
         .expect(200)
         .then(({ body }) => {
             const { comments } = body
-            console.log('1.', comments[0])
             expect(comments.length).toBe(11)
             expect(comments).toBeSortedBy('created_at')
             expect(comments[0].comment_id).toBe(9)
@@ -143,5 +142,50 @@ describe("/api/articles/:article_id/comments", () => {
                 expect(message).toBe('invalid query value')
             })
     })
+})
+
+describe("POST /api/articles/:article_id/comments", () => {
+
+    test("POST 201: Responds with a new comment", () => {
+
+        const newComment = {
+            username: 'icellusedkars',
+            body: "This is the greatest article I've ever seen!"
+        }
+
+        return request(app)
+            .post("/api/articles/1/comments")
+            .send(newComment)
+            .expect(201)
+            .then(({ body }) => {
+                const { comments } = body
+                expect(comments.comment_id).toBe(19)
+                expect(comments.body).toBe("This is the greatest article I've ever seen!")
+                expect(comments.article_id).toBe(1)
+                expect(comments.author).toBe('icellusedkars')
+                expect(comments.votes).toBe(0)
+                expect(typeof comments.created_at).toBe('string')
+                
+            })
+    })
+
+    // test("POST 400: Responds with an error when we pass through an empty comment", () => {
+        
+    //     const newComment = {
+    //         username: 'icellusedkars',
+    //         body: "This is the greatest article I've ever seen!"
+    //     }
+        
+    //     return request(app)
+    //         .post("/api/articles/99/comments")
+    //         .send(newComment)
+    //         .expect(400)
+    //         .then(({ body }) => {
+    //             console.log(body)
+    //             const { message } = body
+    //             expect(message).toBe('No comment to add')
+    //         })
+    // })
 
 })
+

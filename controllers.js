@@ -1,6 +1,6 @@
 const { map } = require("./app");
 const { forEach } = require("./db/data/test-data/articles");
-const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById} = require("./models")
+const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment} = require("./models")
 
 function getTopics(req, res, next) {
     getThatTopic().then((topic) => {
@@ -55,4 +55,14 @@ function getCommentById(req, res, next) {
     });
 }
 
-module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById}
+function postComment(req, res, next) {
+    const { article_id } = req.params
+    let newComment = req.body;
+    PostThatComment(newComment, article_id).then((comment) => {
+        res.status(201).send({comments: comment});
+    }).catch((err) => {
+        next(err);
+    });
+};
+
+module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment}
