@@ -200,11 +200,53 @@ describe("PATCH /api/articles/:article_id", () => {
         .send(newVotes)
         .expect(200)
         .then(({ body }) => {
-            expect(body.articles).toEqual({
+            expect(body.articles[0]).toEqual({
+                article_id: 1,
                 title: "Living in the shadow of a great man",
-                votes: 101
-            })
+                topic: "mitch",
+                author: "butter_bridge",
+                body: "I find this existence challenging",
+                created_at: "2020-07-09T20:11:00.000Z",
+                votes: 101,
+                article_img_url:
+                  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+              },)
         })
     })
+
+    test("PATCH 200: Responds with an article with it's votes patched.", () => {
+        const newVotes = {
+             inc_votes: -50
+        };
+        return request (app)
+        .patch("/api/articles/1")
+        .send(newVotes)
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.articles[0]).toEqual({
+                article_id: 1,
+                title: "Living in the shadow of a great man",
+                topic: "mitch",
+                author: "butter_bridge",
+                body: "I find this existence challenging",
+                created_at: "2020-07-09T20:11:00.000Z",
+                votes: 50,
+                article_img_url:
+                  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+              },)
+        })
+    })
+
+    test("GET 400: Responds with an error when we pass through an id number that doesn't exist", () => {
+        return request(app)
+            .get("/api/articles/99")
+            .expect(400)
+            .then(({ body }) => {
+                const { message } = body
+                expect(message).toBe('invalid query value')
+            })
+    })
+
+    
 })
 

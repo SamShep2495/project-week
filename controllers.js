@@ -67,13 +67,17 @@ function postComment(req, res, next) {
 
 function patchArticleById(req, res, next) {
     const {article_id} = req.params
-    let newVOtes = req.body
+    let { inc_votes } = req.body
     getThemArticlesById(article_id).then((article) => {
         if (article.length === 0) {
             return Promise.reject({ status: 400, message: 'invalid query value'})
         }
-        console.log(article)
-        res.status(200).send(article)
+        for (let key in article[0]) {
+            if (key === 'votes') {
+                article[0][key] = article[0][key] + inc_votes
+            }
+        }
+        res.status(200).send({articles: article})
     }).catch((err) => {
         next(err);
     });
