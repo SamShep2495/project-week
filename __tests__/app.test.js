@@ -189,3 +189,22 @@ describe("POST /api/articles/:article_id/comments", () => {
 
 })
 
+describe("PATCH /api/articles/:article_id", () => {
+
+    test("PATCH 200: Responds with an article with it's votes patched.", () => {
+        const newVotes = {
+             inc_votes: 1
+        };
+        return request (app)
+        .patch("/api/articles/1")
+        .send(newVotes)
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.articles).toEqual({
+                title: "Living in the shadow of a great man",
+                votes: 101
+            })
+        })
+    })
+})
+
