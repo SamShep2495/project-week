@@ -80,3 +80,36 @@ describe("/api/articles/:article_id", ()=> {
     })
 
 });
+
+describe("/api/articles", () => {
+
+    test("GET 200: Responds with an array of articles objects.", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+                const { articles } = body;
+                expect(articles.length).toBe(13);
+                articles.forEach((article) => {
+                    expect(typeof article.article_id).toBe('number')
+                    expect(typeof article.title).toBe('string')
+                    expect(typeof article.topic).toBe('string')
+                    expect(typeof article.author).toBe('string')
+                    expect(typeof article.created_at).toBe('string')
+                    expect(typeof article.votes).toBe('number')
+                    expect(typeof article.article_img_url).toBe('string')
+                })
+            })
+    })
+
+    test("GET 200: Takes our sort_by and sorts the articles into that order along with the body being removed.", () => {
+        return request(app)
+        .get('/api/articles?sort_by=created_at')
+        .expect(200)
+        .then(({ body }) => {
+            const { articles } = body
+            expect(articles).toBeSortedBy('created_at')
+        })
+    })
+
+})
