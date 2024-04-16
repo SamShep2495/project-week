@@ -65,4 +65,18 @@ function postComment(req, res, next) {
     });
 };
 
-module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment}
+function patchArticleById(req, res, next) {
+    const {article_id} = req.params
+    let newVOtes = req.body
+    getThemArticlesById(article_id).then((article) => {
+        if (article.length === 0) {
+            return Promise.reject({ status: 400, message: 'invalid query value'})
+        }
+        console.log(article)
+        res.status(200).send(article)
+    }).catch((err) => {
+        next(err);
+    });
+};
+
+module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById}
