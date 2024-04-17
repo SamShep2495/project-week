@@ -1,6 +1,6 @@
 const { map } = require("./app");
 const { forEach } = require("./db/data/test-data/articles");
-const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments} = require("./models")
+const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments, getThemUsers} = require("./models")
 
 function getTopics(req, res, next) {
     getThatTopic().then((topic) => {
@@ -88,7 +88,18 @@ function deleteCommentById(req, res, next) {
         res.status(204).send({comment: comment[0]})
     }).catch((err) => {
         next(err);
-    })
+    });
 }
 
-module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById, deleteCommentById}
+function getUsers(req, res, next) {
+    getThemUsers().then((user) => {
+        if (user.length === 0) {
+            return Promise.reject({ status: 404, message: 'Invalid endpoint'})
+        }
+        res.status(200).send({users: user})
+    }).catch((err) => {
+        next(err);
+    });
+}
+
+module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById, deleteCommentById, getUsers}

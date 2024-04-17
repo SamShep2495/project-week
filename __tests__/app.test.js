@@ -102,6 +102,17 @@ describe("/api/articles", () => {
             })
     })
 
+    test("GET 400: Responds with a status code of 400 and a message when we pass through an invalid get request.", () => {
+        return request(app)
+        .get("/api/article")
+        .expect(404)
+        .then(({ body }) => {
+            console.log('1.', body)
+            const { message } = body
+            expect(message).toBe('Invalid endpoint')
+        })
+    })
+
     test("GET 200: Takes our sort_by and sorts the articles into that order along with the body being removed.", () => {
         return request(app)
         .get('/api/articles?sort_by=created_at')
@@ -270,4 +281,31 @@ describe("DELETE /api/comments/:comment_id", () => {
     })
 })
 
+describe("GET /api/users", () => {
 
+    test("GET 200: Responds with a status code of 200 along with the content of the user file.", () => {
+        return request(app)
+        .get("/api/users")
+        .expect(200)
+            .then(({ body }) => {
+                const { users } = body;
+                expect(users.length).toBe(4);
+                users.forEach((user) => {
+                    expect(typeof user.username).toBe('string')
+                    expect(typeof user.name).toBe('string')
+                    expect(typeof user.avatar_url).toBe('string')
+                })
+            })
+    })
+
+    test("GET 400: Responds with a status code of 400 and a message when we pass through an invalid get request.", () => {
+        return request(app)
+        .get("/api/userss")
+        .expect(404)
+        .then(({ body }) => {
+            const { message } = body
+            expect(message).toBe('Invalid endpoint')
+        })
+    })
+
+})
