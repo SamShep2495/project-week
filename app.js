@@ -1,5 +1,5 @@
 const express = require("express");
-const {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById, deleteCommentById} = require("./controllers");
+const {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById, deleteCommentById, getUsers} = require("./controllers");
 const app = express();
 
 app.use(express.json());
@@ -20,6 +20,8 @@ app.patch("/api/articles/:article_id", patchArticleById)
 
 app.delete("/api/comments/:comment_id", deleteCommentById)
 
+app.get("/api/users", getUsers)
+
 app.use((err, req, res, next) => {
     if (err.status && err.message) {
         res.status(err.status).send({ message: err.message})
@@ -30,5 +32,9 @@ app.use((err, req, res, next) => {
 app.use((err, req, res, next) => {
     res.status(500).send( {message: "internal server error"})
 });
+
+app.all('*',(req, res) => {
+    res.status(404).send({message: "Invalid endpoint"})
+})
 
 module.exports = app;

@@ -69,4 +69,10 @@ function deleteThemComments(comment_id) {
     })
 }
 
-module.exports = {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments}
+function getThemUsers() {
+    return db.query(`SELECT * FROM users`).then(({ rows }) => {
+        return rows
+    })
+}
+
+module.exports = {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments, getThemUsers}
