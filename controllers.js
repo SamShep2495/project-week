@@ -1,6 +1,6 @@
 const { map } = require("./app");
 const { forEach } = require("./db/data/test-data/articles");
-const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment} = require("./models")
+const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments} = require("./models")
 
 function getTopics(req, res, next) {
     getThatTopic().then((topic) => {
@@ -59,7 +59,7 @@ function postComment(req, res, next) {
     const { article_id } = req.params
     let newComment = req.body;
     PostThatComment(newComment, article_id).then((comment) => {
-        res.status(201).send({comments: comment});
+        res.status(201).send({comment: comment});
     }).catch((err) => {
         next(err);
     });
@@ -67,20 +67,28 @@ function postComment(req, res, next) {
 
 function patchArticleById(req, res, next) {
     const {article_id} = req.params
-    let { inc_votes } = req.body
+    const { inc_votes } = req.body
     getThemArticlesById(article_id).then((article) => {
         if (article.length === 0) {
             return Promise.reject({ status: 400, message: 'invalid query value'})
         }
-        for (let key in article[0]) {
-            if (key === 'votes') {
-                article[0][key] = article[0][key] + inc_votes
-            }
-        }
+        article[0].votes = article[0].votes + inc_votes
         res.status(200).send({articles: article})
     }).catch((err) => {
         next(err);
     });
 };
 
-module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById}
+function deleteCommentById(req, res, next) {
+    const { comment_id } = req.params
+    deleteThemComments(comment_id).then((comment) => {
+        if (comment.length === 0) {
+            return Promise.reject({ status: 400, message: 'invalid query value'})
+        }
+        res.status(204).send({comment: comment[0]})
+    }).catch((err) => {
+        next(err);
+    })
+}
+
+module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById, deleteCommentById}

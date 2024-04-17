@@ -158,13 +158,13 @@ describe("POST /api/articles/:article_id/comments", () => {
             .send(newComment)
             .expect(201)
             .then(({ body }) => {
-                const { comments } = body
-                expect(comments.comment_id).toBe(19)
-                expect(comments.body).toBe("This is the greatest article I've ever seen!")
-                expect(comments.article_id).toBe(1)
-                expect(comments.author).toBe('icellusedkars')
-                expect(comments.votes).toBe(0)
-                expect(typeof comments.created_at).toBe('string')
+                const { comment } = body
+                expect(comment.comment_id).toBe(19)
+                expect(comment.body).toBe("This is the greatest article I've ever seen!")
+                expect(comment.article_id).toBe(1)
+                expect(comment.author).toBe('icellusedkars')
+                expect(comment.votes).toBe(0)
+                expect(typeof comment.created_at).toBe('string')
                 
             })
     })
@@ -181,7 +181,7 @@ describe("POST /api/articles/:article_id/comments", () => {
     //         .send(newComment)
     //         .expect(400)
     //         .then(({ body }) => {
-    //             console.log(body)
+    //             console.log('6.', body)
     //             const { message } = body
     //             expect(message).toBe('No comment to add')
     //         })
@@ -239,14 +239,35 @@ describe("PATCH /api/articles/:article_id", () => {
 
     test("GET 400: Responds with an error when we pass through an id number that doesn't exist", () => {
         return request(app)
-            .get("/api/articles/99")
+            .patch("/api/articles/99")
             .expect(400)
             .then(({ body }) => {
                 const { message } = body
                 expect(message).toBe('invalid query value')
             })
     })
-
-    
 })
+
+describe("DELETE /api/comments/:comment_id", () => {
+
+    test("DELETE 204: Responds with status code of 204 with no content as we've deleted all the content with this comment_id.", () => {
+        return request(app)
+        .delete("/api/comments/1")
+        .expect(204)
+        .then(({body}) => {
+            expect(Object.keys(body).length).toBe(0)
+        })
+    })
+
+    test("DELETE 400: Responds with an error message when passed through a comment id that doesn't exist.", () => {
+        return request(app)
+        .delete("/api/comments/99")
+        .expect(400)
+        .then(({ body }) => {
+            const { message } = body
+            expect(message).toBe('invalid query value')
+        })
+    })
+})
+
 
