@@ -33,11 +33,35 @@ function getArticleById(req, res, next) {
 function getArticle(req, res, next) {
     const { sort_by } = req.query
     const { order } = req.query
+    const { filter_by_topic } = req.query
     getThemArticles(sort_by, order).then((articles) => {
+
+        if (articles.length === 0) {
+            return Promise.reject({ status: 400, message: 'invalid query value'})
+        }
         articles.map((article) => {
             delete article.body
         })
-        res.status(200).send({ articles });
+
+        validTopics = []
+        articles.forEach(element => {
+            validTopics.push(element.topic)
+        });
+        let valTopics = [...new Set(validTopics)]
+
+        if(!filter_by_topic){
+            res.status(200).send({ articles });
+        } else if (valTopics.includes(filter_by_topic)) {
+            let specificTopic = []
+            articles.forEach(element => {
+                if (element.topic === filter_by_topic) {
+                    specificTopic.push(element)
+                    res.status(200).send({ specificTopic })
+                }
+            })
+        } else {
+            res.status(400).send({ message: 'Invalid topic'})
+        }
     }).catch((err) => {
         next(err);
     })
