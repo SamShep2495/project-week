@@ -66,6 +66,7 @@ describe("/api/articles/:article_id", ()=> {
             expect(article.created_at).toBe("2020-07-09T20:11:00.000Z")
             expect(article.votes).toBe(100)
             expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700")
+            expect(article.comment_count).toBe(11)
         });
     });
 
@@ -89,6 +90,7 @@ describe("/api/articles", () => {
             .expect(200)
             .then(({ body }) => {
                 const { articles } = body;
+                //console.log('1.', articles)
                 expect(articles.length).toBe(13);
                 articles.forEach((article) => {
                     expect(typeof article.article_id).toBe('number')
@@ -98,6 +100,7 @@ describe("/api/articles", () => {
                     expect(typeof article.created_at).toBe('string')
                     expect(typeof article.votes).toBe('number')
                     expect(typeof article.article_img_url).toBe('string')
+                    expect(typeof article.comment_count).toBe('number')
                 })
             })
     })

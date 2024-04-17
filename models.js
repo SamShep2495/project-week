@@ -26,7 +26,7 @@ function getThemArticles(sort_by = 'article_id', order = 'ASC') {
     if (!validSortBys.includes(sort_by)) {
         return Promise.reject({ status: 400, message: 'invalid query value'})
     }
-    let sqlString = `SELECT * FROM articles `
+    let sqlString = `SELECT article_id, title, topic, author, created_at, votes, article_img_url FROM articles `
     sqlString += `ORDER BY ${sort_by} ${order}`
     
     return db.query(sqlString).then(({ rows }) => {
