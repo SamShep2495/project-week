@@ -57,11 +57,16 @@ function PostThatComment(newComment, article_id) {
     
     let sqlString = `INSERT INTO comments (body, author, article_id) VALUES ($1, $2, $3) RETURNING *`
 
-    let queryValue = [newComment.body, newComment.username, article_id]
-
+    const queryValue = [newComment.body, newComment.username, article_id]
     return db.query(sqlString, queryValue).then(({ rows }) => {
         return rows[0]
     })
 }
 
-module.exports = {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment}
+function deleteThemComments(comment_id) {
+    return db.query(`SELECT * FROM comments WHERE comment_id=$1`,[comment_id]).then(({ rows }) => {
+        return rows
+    })
+}
+
+module.exports = {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments}
