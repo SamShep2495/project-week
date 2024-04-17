@@ -107,7 +107,6 @@ describe("/api/articles", () => {
         .get("/api/article")
         .expect(404)
         .then(({ body }) => {
-            console.log('1.', body)
             const { message } = body
             expect(message).toBe('Invalid endpoint')
         })
@@ -120,6 +119,27 @@ describe("/api/articles", () => {
         .then(({ body }) => {
             const { articles } = body
             expect(articles).toBeSortedBy('created_at')
+        })
+    })
+
+    test("GET 200: REsponds with an array of object that have the topic as cat.", () => {
+        return request(app)
+        .get('/api/articles?filter_by_topic=cats')
+        .expect(200)
+        .then(({ body }) => {
+            const { specificTopic } = body
+            expect(specificTopic).toBeSortedBy('created_at')
+            expect(specificTopic.length).toBe(1)
+        })
+    })
+
+    test("GET 400: Responds with a status code of 400 and an error message when we pass through an invalid topic", () => {
+        return request(app)
+        .get('/api/articles?filter_by_topic=dogs')
+        .expect(400)
+        .then(({ body }) => {
+            const { message } = body
+            expect(message).toBe('Invalid topic')
         })
     })
 
