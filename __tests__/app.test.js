@@ -25,11 +25,13 @@ describe('/api/topics', ()=> {
             .expect(200)
             .then(({ body }) => {
                 const { topics } = body;
+                const expected = {}
                 expect(topics.length).toBe(3);
                 topics.forEach(element => {
                     expect(typeof element.slug).toBe('string');
                     expect(typeof element.description).toBe('string');
                 });
+                console.log('2.', topics[0])
             });
     });
 });
