@@ -25,13 +25,14 @@ describe('/api/topics', ()=> {
             .expect(200)
             .then(({ body }) => {
                 const { topics } = body;
-                const expected = {}
+                const actual = topics[0]
+                const expected = { slug: 'mitch', description: 'The man, the Mitch, the legend' }
                 expect(topics.length).toBe(3);
                 topics.forEach(element => {
                     expect(typeof element.slug).toBe('string');
                     expect(typeof element.description).toBe('string');
                 });
-                console.log('2.', topics[0])
+                expect(actual).toMatchObject(expected);
             });
     });
 });
