@@ -9,13 +9,6 @@ function getThatTopic() {
     })
 }
 
-function getThatApi() {
-    return readFile('./endpoints.json', 'utf-8').then((fileContent) => {
-        const apis = JSON.parse(fileContent);
-        return body = { apis }
-    })
-}
-
 function getThemArticlesById(id) {
 
     let sqlString = `SELECT articles.*, 
@@ -100,4 +93,18 @@ function getThemUsers() {
     })
 }
 
-module.exports = {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments, getThemUsers}
+function getThemUsersById(username) {
+    return db.query(`SELECT * FROM users WHERE username=$1`,[username]).then(({ rows }) => {
+        return rows
+    })
+}
+
+function getThemCommentsByCommentId(comment_id) {
+    return db.query(`SELECT * FROM comments WHERE comment_id=$1`,[comment_id]).then(({ rows }) => {
+        return rows        
+    })
+}
+
+module.exports = {getThatTopic, getThemArticlesById, getThemArticles, 
+                getThemCommentsById, PostThatComment, deleteThemComments, 
+                getThemUsers, getThemUsersById, getThemCommentsByCommentId}

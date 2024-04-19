@@ -3,9 +3,7 @@ const app = require('../app')
 const db = require("../db/connection.js")
 const data = require('../db/data/test-data/index.js')
 const seed = require('../db/seeds/seed.js')
-const { readFile } = require("fs/promises");
 const myRequest = require("../endpoints.json")
-const { log } = require('console')
 
 
 afterAll(() => {
@@ -370,5 +368,89 @@ describe("GET /api/users", () => {
             expect(message).toBe('Invalid endpoint')
         })
     })
+
+})
+
+describe("GET /api/users/:username", () => {
+
+    test("GET 200: Responds with a specified user depends on the username input,", () => {
+        return request(app)
+        .get("/api/users/butter_bridge")
+        .expect(200)
+        .then(({ body }) => {
+            const expected = {
+                username: 'butter_bridge',
+                name: 'jonny',
+                avatar_url:
+                  'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg'
+              }
+            const actual = body.user[0]
+            expect(actual).toMatchObject(expected)
+        });
+    });
+
+    test("GET 400: Responds with an error when we pass through an id number that doesn't exist", () => {
+        return request(app)
+            .get("/api/users/samuel")
+            .expect(404)
+            .then(({ body }) => {
+                const { message } = body
+                expect(message).toBe('Invalid endpoint')
+            })
+    })
+})
+
+describe("PATCH /api/comments/:comment_id", () => {
+
+    test("PATCH 200: Responds with a comment with it's votes patched.", () => {
+        const newVotes = {
+             inc_votes: 5
+        };
+        return request (app)
+        .patch("/api/comments/1")
+        .send(newVotes)
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comment[0]).toEqual({
+                comment_id: 1,
+                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                votes: 21,
+                author: "butter_bridge",
+                article_id: 9,
+                created_at: "2020-04-06T12:17:00.000Z",
+              },)
+        })
+    })
+
+    test("PATCH 200: Responds with a comment with it's votes patched.", () => {
+        const newVotes = {
+             inc_votes: -5
+        };
+        return request (app)
+        .patch("/api/comments/1")
+        .send(newVotes)
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comment[0]).toEqual({
+                comment_id: 1,
+                body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                votes: 11,
+                author: "butter_bridge",
+                article_id: 9,
+                created_at: "2020-04-06T12:17:00.000Z",
+              },)
+        })
+    })
+
+    test("PATCH 400: Responds with an error when we pass through an id number that doesn't exist", () => {
+        return request(app)
+            .patch("/api/comments/99")
+            .expect(404)
+            .then(({ body }) => {
+                const { message } = body
+                expect(message).toBe('Not Found')
+            })
+    })
+
 
 })

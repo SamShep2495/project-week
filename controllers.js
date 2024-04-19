@@ -1,4 +1,6 @@
-const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments, getThemUsers} = require("./models")
+const {getThatTopic, getThemArticlesById, getThemArticles, getThemCommentsById, 
+    PostThatComment, deleteThemComments, getThemUsers, getThemUsersById, 
+    getThemCommentsByCommentId} = require("./models")
 const myRequest =  require("./db/data/test-data/comments")
 const myRequest2 = require("./endpoints.json")
 
@@ -117,4 +119,33 @@ function getUsers(req, res, next) {
     });
 }
 
-module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, postComment, patchArticleById, deleteCommentById, getUsers}
+function getUserById(req, res, next) {
+    const { username } = req.params
+    getThemUsersById(username).then((user) => {
+        if (user.length === 0) {
+            return Promise.reject({ status: 404, message: 'Invalid endpoint'})
+        }
+        res.status(200).send({user})
+    }).catch((err) => {
+        next(err);
+    })
+}
+
+function patchUserById(req, res, next) {
+    const { comment_id } = req.params
+    const { inc_votes } = req.body
+    getThemCommentsByCommentId(comment_id).then((comment) => {
+        if (comment.length === 0) {
+            return Promise.reject({ status: 404, message: 'Not Found'})
+        }
+        comment[0].votes = comment[0].votes + inc_votes
+        res.status(200).send({comment})
+    }).catch((err) => {
+        next(err);
+    });
+    
+};
+
+module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, 
+                postComment, patchArticleById, deleteCommentById, getUsers, 
+                getUserById, patchUserById}
