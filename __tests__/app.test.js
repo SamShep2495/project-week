@@ -5,6 +5,7 @@ const data = require('../db/data/test-data/index.js')
 const seed = require('../db/seeds/seed.js')
 const { readFile } = require("fs/promises");
 const myRequest = require("../endpoints.json")
+const { log } = require('console')
 
 
 afterAll(() => {
@@ -138,17 +139,27 @@ describe("/api/articles", () => {
         .expect(200)
         .then(({ body }) => {
             const { articles } = body
+            expect(articles).toBeSortedBy('created_at')
+        })
+    })
+
+    test("GET 200: Takes our sort_by and sorts the articles into that order along with the body being removed.", () => {
+        return request(app)
+        .get('/api/articles?sort_by=article_id')
+        .expect(200)
+        .then(({ body }) => {
+            const { articles } = body
             expect(articles).toBeSortedBy('article_id')
         })
     })
 
     test("GET 200: Takes our sort_by and sorts the articles into that order along with the body being removed.", () => {
         return request(app)
-        .get('/api/articles?sort_by=created_at')
-        .expect(200)
+        .get('/api/articles?sort_by=comment_id')
+        .expect(400)
         .then(({ body }) => {
-            const { articles } = body
-            expect(articles).toBeSortedBy('created_at')
+            const { message } = body
+            expect(message).toBe('invalid query value')
         })
     })
     
@@ -159,7 +170,7 @@ describe("/api/articles", () => {
         .expect(200)
         .then(({ body }) => {
             const { specificTopic } = body
-            expect(specificTopic).toBeSortedBy('article_id')
+            expect(specificTopic).toBeSortedBy('created_at')
             expect(specificTopic.length).toBe(12)
         })
     })
