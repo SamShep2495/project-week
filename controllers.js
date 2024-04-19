@@ -1,7 +1,6 @@
-const { map } = require("./app");
-const { forEach } = require("./db/data/test-data/articles");
 const {getThatTopic, getThatApi, getThemArticlesById, getThemArticles, getThemCommentsById, PostThatComment, deleteThemComments, getThemUsers} = require("./models")
 const myRequest =  require("./db/data/test-data/comments")
+const myRequest2 = require("./endpoints.json")
 
 function getTopics(req, res, next) {
     getThatTopic().then((topic) => {
@@ -12,44 +11,12 @@ function getTopics(req, res, next) {
 };
 
 function getApi(req, res, next) {
-    getThatApi().then((api) => {
-        res.status(200).send(api)
-    }).catch((err) => {
-        next(err);
-    });
-};
+    res.status(200).send({apis: myRequest2})
+}
 
 function getArticleById(req, res, next) {
     const {article_id} = req.params
     getThemArticlesById(article_id).then((articles) => {
-        if (articles.length === 0) {
-            return Promise.reject({ status: 400, message: 'invalid query value'})
-        }
-
-        let articleIdCount = []
-        myRequest.forEach(element => {
-            articleIdCount.push(element.article_id)
-        });
-        let listOfIds = [...new Set(articleIdCount)]
-        let listOfArticleIds = {}
-        listOfIds.forEach(element => {
-            let article = `article_id ${element}`
-            listOfArticleIds[element] = 0
-        });
-        myRequest.forEach(element => {
-            for (const key in listOfArticleIds) {
-                if (element.article_id === Number(key)) {
-                    listOfArticleIds[key] = listOfArticleIds[key] + 1
-                }
-            }
-        });
-
-        articles[0].comment_count = 0
-        for (let key in listOfArticleIds) {
-            if(Number(key) === articles[0].article_id) {
-                articles[0].comment_count = listOfArticleIds[key]
-            } 
-        }
 
         res.status(200).send(articles)
     }).catch((err) => {
@@ -60,58 +27,31 @@ function getArticleById(req, res, next) {
 function getArticle(req, res, next) {
     const { sort_by } = req.query
     const { order } = req.query
-    const { filter_by_topic } = req.query
+    const { topic } = req.query
     getThemArticles(sort_by, order).then((articles) => {
 
         if (articles.length === 0) {
             return Promise.reject({ status: 400, message: 'invalid query value'})
         }
-        //adding the comment_count
-        let articleIdCount = []
-        myRequest.forEach(element => {
-            articleIdCount.push(element.article_id)
-        });
-        let listOfIds = [...new Set(articleIdCount)]
-        let listOfArticleIds = {}
-        listOfIds.forEach(element => {
-            let article = `article_id ${element}`
-            listOfArticleIds[element] = 0
-        });
-        myRequest.forEach(element => {
-            for (const key in listOfArticleIds) {
-                if (element.article_id === Number(key)) {
-                    listOfArticleIds[key] = listOfArticleIds[key] + 1
-                }
-            }
-        });
-        articles.map((article) => {
-            for (let key in listOfArticleIds) {
-                if(Number(key) === article.article_id) {
-                    article.comment_count = listOfArticleIds[key]
-                } else {
-                    article.comment_count = 0
-                }
-            }
-        })
-
+        
         validTopics = []
         articles.forEach(element => {
             validTopics.push(element.topic)
         });
         let valTopics = [...new Set(validTopics)]
 
-        if(!filter_by_topic){
+        let specificTopic = []
+        if(!topic){
             res.status(200).send({ articles });
-        } else if (valTopics.includes(filter_by_topic)) {
-            let specificTopic = []
+        } else if (valTopics.includes(topic)) {
             articles.forEach(element => {
-                if (element.topic === filter_by_topic) {
+                if (element.topic === topic) {
                     specificTopic.push(element)
-                    res.status(200).send({ specificTopic })
                 }
             })
+            res.status(200).send({ specificTopic })
         } else {
-            res.status(400).send({ message: 'Invalid topic'})
+            res.status(404).send({ message: 'Invalid topic'})
         }
     }).catch((err) => {
         next(err);
@@ -132,7 +72,7 @@ function getCommentById(req, res, next) {
 
 function postComment(req, res, next) {
     const { article_id } = req.params
-    let newComment = req.body;
+    const newComment = req.body;
     PostThatComment(newComment, article_id).then((comment) => {
         res.status(201).send({comment: comment});
     }).catch((err) => {

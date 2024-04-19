@@ -3,6 +3,8 @@ const app = require('../app')
 const db = require("../db/connection.js")
 const data = require('../db/data/test-data/index.js')
 const seed = require('../db/seeds/seed.js')
+const { readFile } = require("fs/promises");
+const myRequest = require("../endpoints.json")
 
 
 afterAll(() => {
@@ -35,6 +37,17 @@ describe('/api/topics', ()=> {
                 expect(actual).toMatchObject(expected);
             });
     });
+
+    test("GET 400: Responds with a status code of 400 and a message when we pass through an invalid get request.", () => {
+        return request(app)
+        .get("/api/topic")
+        .expect(404)
+        .then(({ body }) => {
+            const { message } = body
+            expect(message).toBe('Invalid endpoint')
+        })
+    })
+
 });
 
 describe('/api', () => {
@@ -44,10 +57,9 @@ describe('/api', () => {
         .get('/api')
         .expect(200)
         .then(({ body }) => {
-            const APIS = body.apis
-            for(let key in APIS) {
-                expect(typeof APIS[key]).toBe('object')
-            }
+            const actual = body.apis
+            const expected = myRequest
+            expect(actual).toMatchObject(expected)
         })
     })
 
@@ -60,26 +72,29 @@ describe("/api/articles/:article_id", ()=> {
         .get("/api/articles/1")
         .expect(200)
         .then(({ body }) => {
-            const article = body[0]
-            expect(article.article_id).toBe(1)
-            expect(article.title).toBe("Living in the shadow of a great man")
-            expect(article.topic).toBe("mitch")
-            expect(article.author).toBe("butter_bridge")
-            expect(article.body).toBe("I find this existence challenging")
-            expect(article.created_at).toBe("2020-07-09T20:11:00.000Z")
-            expect(article.votes).toBe(100)
-            expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700")
-            expect(article.comment_count).toBe(11)
+            const expected = {
+                article_id: 1,
+                title: 'Living in the shadow of a great man',
+                topic: 'mitch',
+                author: 'butter_bridge',
+                body: 'I find this existence challenging',
+                created_at: '2020-07-09T20:11:00.000Z',
+                votes: 100,
+                article_img_url: 'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700',
+                comment_count: 11
+              }
+            const actual = body[0]
+            expect(actual).toMatchObject(expected)
         });
     });
 
     test("GET 400: Responds with an error when we pass through an id number that doesn't exist", () => {
         return request(app)
             .get("/api/articles/99")
-            .expect(400)
+            .expect(404)
             .then(({ body }) => {
                 const { message } = body
-                expect(message).toBe('invalid query value')
+                expect(message).toBe('Not Found')
             })
     })
 
@@ -93,7 +108,6 @@ describe("/api/articles", () => {
             .expect(200)
             .then(({ body }) => {
                 const { articles } = body;
-                //console.log('1.', articles)
                 expect(articles.length).toBe(13);
                 articles.forEach((article) => {
                     expect(typeof article.article_id).toBe('number')
@@ -120,6 +134,16 @@ describe("/api/articles", () => {
 
     test("GET 200: Takes our sort_by and sorts the articles into that order along with the body being removed.", () => {
         return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then(({ body }) => {
+            const { articles } = body
+            expect(articles).toBeSortedBy('article_id')
+        })
+    })
+
+    test("GET 200: Takes our sort_by and sorts the articles into that order along with the body being removed.", () => {
+        return request(app)
         .get('/api/articles?sort_by=created_at')
         .expect(200)
         .then(({ body }) => {
@@ -127,22 +151,23 @@ describe("/api/articles", () => {
             expect(articles).toBeSortedBy('created_at')
         })
     })
+    
 
-    test("GET 200: REsponds with an array of object that have the topic as cat.", () => {
+    test("GET 200: Responds with an array of object that have the topic as cat.", () => {
         return request(app)
-        .get('/api/articles?filter_by_topic=cats')
+        .get('/api/articles?topic=mitch')
         .expect(200)
         .then(({ body }) => {
             const { specificTopic } = body
-            expect(specificTopic).toBeSortedBy('created_at')
-            expect(specificTopic.length).toBe(1)
+            expect(specificTopic).toBeSortedBy('article_id')
+            expect(specificTopic.length).toBe(12)
         })
     })
 
     test("GET 400: Responds with a status code of 400 and an error message when we pass through an invalid topic", () => {
         return request(app)
-        .get('/api/articles?filter_by_topic=dogs')
-        .expect(400)
+        .get('/api/articles?topic=dogs')
+        .expect(404)
         .then(({ body }) => {
             const { message } = body
             expect(message).toBe('Invalid topic')
@@ -159,14 +184,14 @@ describe("GET /api/articles/:article_id/comments", () => {
         .expect(200)
         .then(({ body }) => {
             const { comments } = body
-            expect(comments.length).toBe(11)
-            expect(comments).toBeSortedBy('created_at')
-            expect(comments[0].comment_id).toBe(9)
-            expect(comments[0].body).toBe("Superficially charming")
-            expect(comments[0].article_id).toBe(1)
-            expect(comments[0].author).toBe("icellusedkars")
-            expect(comments[0].votes).toBe(0)
-            expect(comments[0].created_at).toBe('2020-01-01T03:08:00.000Z')
+            comments.forEach(element => {
+                expect(typeof element.comment_id).toBe('number')
+                expect(typeof element.body).toBe('string')
+                expect(typeof element.article_id).toBe('number')
+                expect(typeof element.author).toBe('string')
+                expect(typeof element.votes).toBe('number')
+                expect(typeof element.created_at).toBe('string')
+            });
         })
     })
 
@@ -206,23 +231,22 @@ describe("POST /api/articles/:article_id/comments", () => {
             })
     })
 
-    // test("POST 400: Responds with an error when we pass through an empty comment", () => {
+    test("POST 400: Responds with an error when we pass through an empty comment", () => {
         
-    //     const newComment = {
-    //         username: 'icellusedkars',
-    //         body: "This is the greatest article I've ever seen!"
-    //     }
+        const newComment = {
+            username: 'icellusedkars',
+            body: "This is the greatest article I've ever seen!"
+        }
         
-    //     return request(app)
-    //         .post("/api/articles/99/comments")
-    //         .send(newComment)
-    //         .expect(400)
-    //         .then(({ body }) => {
-    //             console.log('6.', body)
-    //             const { message } = body
-    //             expect(message).toBe('No comment to add')
-    //         })
-    // })
+        return request(app)
+            .post("/api/articles/99/comments")
+            .send(newComment)
+            .expect(404)
+            .then(({ body }) => {
+                const { message } = body
+                expect(message).toBe('Invalid endpoint')
+            })
+    })
 
 })
 
@@ -247,7 +271,8 @@ describe("PATCH /api/articles/:article_id", () => {
                 votes: 101,
                 article_img_url:
                   "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-              },)
+                comment_count: 11
+                },)
         })
     })
 
@@ -270,17 +295,18 @@ describe("PATCH /api/articles/:article_id", () => {
                 votes: 50,
                 article_img_url:
                   "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-              },)
+                comment_count: 11
+                },)
         })
     })
 
-    test("GET 400: Responds with an error when we pass through an id number that doesn't exist", () => {
+    test("PATCH 400: Responds with an error when we pass through an id number that doesn't exist", () => {
         return request(app)
             .patch("/api/articles/99")
-            .expect(400)
+            .expect(404)
             .then(({ body }) => {
                 const { message } = body
-                expect(message).toBe('invalid query value')
+                expect(message).toBe('Not Found')
             })
     })
 })

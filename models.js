@@ -1,5 +1,7 @@
 const db = require("./db/connection.js")
 const { readFile } = require("fs/promises");
+const { map } = require("./db/data/test-data/topics.js");
+
 
 function getThatTopic() {
     return db.query(`SELECT * FROM topics;`).then(({ rows }) => {
@@ -15,7 +17,21 @@ function getThatApi() {
 }
 
 function getThemArticlesById(id) {
-    return db.query(`SELECT * FROM articles WHERE article_id=$1`,[id]).then(({ rows }) => {
+
+    let sqlString = `SELECT articles.*, 
+    COALESCE(comments.comment_count, 0) 
+    AS comment_count FROM articles 
+    LEFT JOIN (SELECT article_id, COUNT(*) AS comment_count FROM comments GROUP BY article_id) AS comments 
+    ON articles.article_id = comments.article_id
+    WHERE articles.article_id = $1`
+    
+    return db.query(sqlString,[id]).then(({ rows }) => {
+        if (rows.length === 0) {
+            return Promise.reject({ status: 404, message: 'Not Found'})
+        }
+        rows.map((article) => {
+            article.comment_count = Number(article.comment_count)
+        })
         return rows
     })
 }
@@ -26,10 +42,19 @@ function getThemArticles(sort_by = 'article_id', order = 'ASC') {
     if (!validSortBys.includes(sort_by)) {
         return Promise.reject({ status: 400, message: 'invalid query value'})
     }
-    let sqlString = `SELECT article_id, title, topic, author, created_at, votes, article_img_url FROM articles `
+
+    let sqlString = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes, articles.article_img_url, 
+    COALESCE(comments.comment_count, 0) 
+    AS comment_count FROM articles 
+    LEFT JOIN (SELECT article_id, COUNT(*) AS comment_count FROM comments GROUP BY article_id) AS comments 
+    ON articles.article_id = comments.article_id `
+
     sqlString += `ORDER BY ${sort_by} ${order}`
     
     return db.query(sqlString).then(({ rows }) => {
+        rows.map((article) => {
+            article.comment_count = Number(article.comment_count)
+        })
         return rows
     });
 };
@@ -55,7 +80,7 @@ function getThemCommentsById(id, sort_by = 'created_at', order = 'ASC') {
 
 function PostThatComment(newComment, article_id) {
     
-    let sqlString = `INSERT INTO comments (body, author, article_id) VALUES ($1, $2, $3) RETURNING *`
+    const sqlString = `INSERT INTO comments (body, author, article_id) VALUES ($1, $2, $3) RETURNING *`
 
     const queryValue = [newComment.body, newComment.username, article_id]
     return db.query(sqlString, queryValue).then(({ rows }) => {
