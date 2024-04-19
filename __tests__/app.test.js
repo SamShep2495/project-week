@@ -451,6 +451,33 @@ describe("PATCH /api/comments/:comment_id", () => {
                 expect(message).toBe('Not Found')
             })
     })
+})
 
+describe("POST /api/articles", () => {
+
+    test("POST 201: Responds with a new article added to the articles table.", () => {
+
+        const newArticle = {
+            title: "cats everywhere",
+            topic: "cats",
+            author: "icellusedkars",
+            body: "Picture of cats"
+        }
+        return request(app)
+            .post("/api/articles")
+            .send(newArticle)
+            .expect(201)
+            .then(({ body }) => {
+                const { article } = body
+                expect(article.article_id).toBe(14)
+                expect(article.title).toBe('cats everywhere')
+                expect(article.topic).toBe('cats')
+                expect(article.author).toBe('icellusedkars')
+                expect(article.body).toBe('Picture of cats')
+                expect(typeof article.created_at).toBe('string')
+                expect(article.votes).toBe(0)
+                expect(article.article_img_url).toBe('https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700')                 
+            })
+    })
 
 })

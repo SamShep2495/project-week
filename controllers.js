@@ -1,6 +1,6 @@
 const {getThatTopic, getThemArticlesById, getThemArticles, getThemCommentsById, 
     PostThatComment, deleteThemComments, getThemUsers, getThemUsersById, 
-    getThemCommentsByCommentId} = require("./models")
+    getThemCommentsByCommentId, postThatArticle} = require("./models")
 const myRequest =  require("./db/data/test-data/comments")
 const myRequest2 = require("./endpoints.json")
 
@@ -142,10 +142,19 @@ function patchUserById(req, res, next) {
         res.status(200).send({comment})
     }).catch((err) => {
         next(err);
-    });
-    
+    });  
 };
+
+function postArticle(req, res, next) {
+    const newArticle = req.body
+    postThatArticle(newArticle).then((article) => {
+        res.status(201).send({article: article})
+    }).catch((err) => {
+        next(err)
+    })
+}
+
 
 module.exports = {getTopics, getApi, getArticleById, getArticle, getCommentById, 
                 postComment, patchArticleById, deleteCommentById, getUsers, 
-                getUserById, patchUserById}
+                getUserById, patchUserById, postArticle}

@@ -1,6 +1,7 @@
 const db = require("./db/connection.js")
 const { readFile } = require("fs/promises");
 const { map } = require("./db/data/test-data/topics.js");
+const { log } = require("console");
 
 
 function getThatTopic() {
@@ -105,6 +106,18 @@ function getThemCommentsByCommentId(comment_id) {
     })
 }
 
+function postThatArticle(newArticle) {
+
+    const sqlString = `INSERT INTO articles (title, topic, author, body) VALUES ($1, $2, $3, $4) RETURNING *`
+                      
+    const queryValues = [newArticle.title, newArticle.topic, newArticle.author, newArticle.body];
+
+    return db.query(sqlString, queryValues).then(({ rows }) => {
+        return rows[0]
+    })
+}
+
 module.exports = {getThatTopic, getThemArticlesById, getThemArticles, 
                 getThemCommentsById, PostThatComment, deleteThemComments, 
-                getThemUsers, getThemUsersById, getThemCommentsByCommentId}
+                getThemUsers, getThemUsersById, getThemCommentsByCommentId,
+                postThatArticle}
