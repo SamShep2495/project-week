@@ -36,7 +36,7 @@ function getThemArticlesById(id) {
     })
 }
 
-function getThemArticles(sort_by = 'article_id', order = 'ASC') {
+function getThemArticles(sort_by = 'created_at', order = 'ASC') {
 
     const validSortBys = ['article_id', 'title', 'topic', 'author', 'created_at', 'article_img_url']
     if (!validSortBys.includes(sort_by)) {
